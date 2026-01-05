@@ -7,8 +7,8 @@ export declare class AttachmentsService {
     private bucketName;
     constructor(prisma: PrismaService, config: ConfigService);
     upload(processId: string, file: any, userId: string): Promise<{
-        id: string;
         name: string;
+        id: string;
         createdAt: Date | null;
         processId: string;
         url: string;
@@ -17,8 +17,8 @@ export declare class AttachmentsService {
     }>;
     list(processId: string): Promise<{
         signedUrl: string;
-        id: string;
         name: string;
+        id: string;
         createdAt: Date | null;
         processId: string;
         url: string;

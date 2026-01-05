@@ -29,10 +29,7 @@ let ProcessesController = class ProcessesController {
         this.service = service;
     }
     createDraft(user, dto) {
-        const companyId = user.companyId || user.metadata?.companyId;
-        if (!companyId && user.role !== 'SUPER_ADMIN') {
-        }
-        return this.service.createDraft(user.id, companyId, dto);
+        return this.service.createDraft(user.id, null, dto);
     }
     updateObjective(id, dto) {
         return this.service.updateDraft(id, dto);

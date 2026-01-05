@@ -22,13 +22,24 @@ let ProcessesService = class ProcessesService {
         this.cache = cache;
     }
     async createDraft(userId, companyId, dto) {
+        let finalCompanyId = companyId;
+        if (!finalCompanyId) {
+            const userProfile = await this.prisma.profile.findUnique({
+                where: { id: userId },
+                select: { companyId: true },
+            });
+            if (!userProfile?.companyId) {
+                throw new common_1.NotFoundException("Usuário não pertence a nenhuma empresa.");
+            }
+            finalCompanyId = userProfile.companyId;
+        }
         const process = await this.prisma.process.create({
             data: {
                 title: dto.name,
-                companyId: companyId,
-                createdById: userId,
+                company: { connect: { id: finalCompanyId } },
+                creator: { connect: { id: userId } },
                 status: client_1.ProcessStatus.DRAFT,
-                version: '1.0',
+                version: "1.0",
             },
         });
         await this.invalidateCache(userId);
@@ -47,14 +58,14 @@ let ProcessesService = class ProcessesService {
             where: { id },
             data: {
                 ...dataToUpdate,
-                updatedAt: new Date()
+                updatedAt: new Date(),
             },
         });
         return updated;
     }
     async validateCollaborators(steps) {
         const collaboratorIds = steps
-            .map(step => step.responsibleId)
+            .map((step) => step.responsibleId)
             .filter(Boolean);
         if (collaboratorIds.length === 0)
             return;
@@ -62,10 +73,10 @@ let ProcessesService = class ProcessesService {
             where: { id: { in: collaboratorIds } },
             select: { id: true },
         });
-        const existingIds = new Set(existingCollaborators.map(c => c.id));
-        const invalidIds = collaboratorIds.filter(id => !existingIds.has(id));
+        const existingIds = new Set(existingCollaborators.map((c) => c.id));
+        const invalidIds = collaboratorIds.filter((id) => !existingIds.has(id));
         if (invalidIds.length > 0) {
-            throw new common_1.NotFoundException(`Collaborators not found: ${invalidIds.join(', ')}`);
+            throw new common_1.NotFoundException(`Collaborators not found: ${invalidIds.join(", ")}`);
         }
     }
     async publish(id, userId) {
@@ -85,16 +96,18 @@ let ProcessesService = class ProcessesService {
             include: {
                 attachments: true,
                 creator: true,
-            }
+            },
         });
     }
     async findAll(userId) {
-        const user = await this.prisma.profile.findUnique({ where: { id: userId } });
+        const user = await this.prisma.profile.findUnique({
+            where: { id: userId },
+        });
         if (!user?.companyId)
             return [];
         return this.prisma.process.findMany({
             where: { companyId: user.companyId },
-            orderBy: { updatedAt: 'desc' }
+            orderBy: { updatedAt: "desc" },
         });
     }
     async invalidateCache(userId) {

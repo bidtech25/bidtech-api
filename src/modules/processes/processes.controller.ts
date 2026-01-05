@@ -24,21 +24,9 @@ export class ProcessesController {
   @Post()
   @ApiOperation({ summary: 'Passo 1: Criar Rascunho do Processo' })
   createDraft(@CurrentUser() user: any, @Body() dto: CreateProcessWizardDto) {
-    // Assuming CustomJWT payload includes companyId or we fetch it. 
-    // For now, let's assume the user profile is loaded or companyId is in JWT.
-    // If user.companyId is missing, we might need to fetch profile.
-    // Let's rely on the service to handle if it's missing or pass what we have.
-    const companyId = user.companyId || user.metadata?.companyId; 
-    
-    if (!companyId && user.role !== 'SUPER_ADMIN') {
-        // In a real scenario, we might fetch it or throw error.
-        // For migration stability, I'll pass a placeholder if missing but log it in service or here.
-        // console.warn('Company ID missing for user', user.id);
-        // We throw friendly error
-        // throw new BadRequestException('User does not belong to a company');
-    }
-    
-    return this.service.createDraft(user.id, companyId, dto);
+    // O service irá buscar o company_id do perfil do usuário
+    // Passamos null para forçar a busca automática
+    return this.service.createDraft(user.id, null, dto);
   }
 
   // --- PASSO 2: OBJETIVO (Texto Simples) ---

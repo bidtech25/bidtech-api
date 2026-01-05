@@ -3,8 +3,8 @@ export declare class AttachmentsController {
     private readonly service;
     constructor(service: AttachmentsService);
     upload(processId: string, file: any, userId: string): Promise<{
-        id: string;
         name: string;
+        id: string;
         createdAt: Date | null;
         processId: string;
         url: string;
@@ -13,8 +13,8 @@ export declare class AttachmentsController {
     }>;
     list(processId: string): Promise<{
         signedUrl: string;
-        id: string;
         name: string;
+        id: string;
         createdAt: Date | null;
         processId: string;
         url: string;

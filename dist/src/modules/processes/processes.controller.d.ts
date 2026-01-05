@@ -9,12 +9,8 @@ export declare class ProcessesController {
     constructor(service: ProcessesService);
     createDraft(user: any, dto: CreateProcessWizardDto): Promise<{
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -26,6 +22,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -33,12 +33,8 @@ export declare class ProcessesController {
     }>;
     updateObjective(id: string, dto: UpdateObjectiveDto): Promise<{
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -50,6 +46,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -57,12 +57,8 @@ export declare class ProcessesController {
     }>;
     updateScope(id: string, dto: UpdateScopeDto): Promise<{
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -74,6 +70,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -81,12 +81,8 @@ export declare class ProcessesController {
     }>;
     updateDetails(id: string, dto: UpdateDetailsDto): Promise<{
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -98,6 +94,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -105,12 +105,8 @@ export declare class ProcessesController {
     }>;
     updateFlowchart(id: string, dto: UpdateFlowchartDto): Promise<{
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -122,6 +118,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -129,12 +129,8 @@ export declare class ProcessesController {
     }>;
     publish(id: string, user: any): Promise<{
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -146,6 +142,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -154,8 +154,8 @@ export declare class ProcessesController {
     findOne(id: string, user: any): Promise<({
         attachments: {
             id: string;
-            name: string;
             createdAt: Date | null;
+            name: string;
             processId: string;
             url: string;
             fileType: string | null;
@@ -163,24 +163,20 @@ export declare class ProcessesController {
         }[];
         creator: {
             id: string;
-            email: string;
-            companyId: string | null;
-            sector_id: string | null;
-            position_id: string | null;
-            name: string;
-            phone: string | null;
-            role: import("@prisma/client").$Enums.Role | null;
             createdAt: Date | null;
             updatedAt: Date | null;
+            companyId: string | null;
+            sector_id: string | null;
+            name: string;
+            email: string;
+            position_id: string | null;
+            phone: string | null;
+            role: import("@prisma/client").$Enums.Role | null;
         };
     } & {
         id: string;
-        companyId: string;
-        sector_id: string | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        title: string;
         code: string | null;
+        title: string;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -192,6 +188,10 @@ export declare class ProcessesController {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        companyId: string;
+        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
