@@ -1,0 +1,1 @@
+{"version":3,"file":"check-ownership.decorator.js","sourceRoot":"","sources":["../../../../../src/modules/auth/decorators/check-ownership.decorator.ts"],"names":[],"mappings":";;;AAAA,2CAA6C;AAEhC,QAAA,aAAa,GAAG,WAAW,CAAC;AAClC,MAAM,cAAc,GAAG,CAAC,YAAoB,EAAE,EAAE,CACrD,IAAA,oBAAW,EAAC,qBAAa,EAAE,YAAY,CAAC,CAAC;AAD9B,QAAA,cAAc,kBACgB"}

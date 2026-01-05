@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// Tabela pública de usuários que espelha o auth.users do Supabase
+/// Fluxo: Admin cria no Auth -> Trigger ou API cria aqui.
+model Profile {
+  id                                        String          @id @default(uuid()) @db.Uuid
+  companyId                                 String?         @map("company_id") @db.Uuid
+  sector_id                                 String?         @db.Uuid
+  position_id                               String?         @db.Uuid
+  email                                     String          @unique @db.VarChar(200)
+  name                                      String          @db.VarChar(200)
+  phone                                     String?         @db.VarChar(22)
+  role                                      Role?           @default(USER)
+  createdAt                                 DateTime?       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                                 DateTime?       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  collaborators                             collaborators[]
+  processes_processes_approved_byToprofiles Process[]       @relation("processes_approved_byToprofiles")
+  processesCreated                          Process[]       @relation("CreatedBy")
+  processes_processes_owner_idToprofiles    Process[]       @relation("processes_owner_idToprofiles")
+  processesUpdated                          Process[]       @relation("UpdatedBy")
+  company                                   Company?        @relation(fields: [companyId], references: [id], onUpdate: NoAction)
+  positions                                 positions?      @relation(fields: [position_id], references: [id], onUpdate: NoAction)
+  sectors                                   sectors?        @relation(fields: [sector_id], references: [id], onUpdate: NoAction)
+  sectors_sectors_manager_idToprofiles      sectors[]       @relation("sectors_manager_idToprofiles")
+
+  @@map("profiles")
+}
+
+/// A entidade principal do cliente (B2B)
+model Company {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String          @db.VarChar(200)
+  cnpj          String?         @unique @db.VarChar(18)
+  isActive      Boolean?        @default(true) @map("is_active")
+  createdAt     DateTime?       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime?       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  collaborators collaborators[]
+  positions     positions[]
+  processes     Process[]
+  employees     Profile[]
+  sectors       sectors[]
+
+  @@map("companies")
+}
+
+model Process {
+  id                                       String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId                                String              @map("company_id") @db.Uuid
+  sector_id                                String?             @db.Uuid
+  owner_id                                 String?             @db.Uuid
+  createdById                              String              @map("created_by") @db.Uuid
+  updatedById                              String?             @map("updated_by") @db.Uuid
+  code                                     String?             @db.VarChar(50)
+  title                                    String              @db.VarChar(200)
+  version                                  String?             @default("1.0") @db.VarChar(10)
+  status                                   ProcessStatus?      @default(DRAFT)
+  objective                                String?
+  scopeIn                                  String[]            @map("scope_in")
+  scopeOut                                 String[]            @map("scope_out")
+  steps                                    Json?               @default("[]")
+  sipoc                                    Json?               @default("{}")
+  stakeholders                             Json?               @default("[]")
+  bpmnXml                                  String?             @map("bpmn_xml")
+  bpmn_image_url                           String?
+  reviewedAt                               DateTime?           @map("reviewed_at") @db.Timestamptz(6)
+  approvedBy                               String?             @map("approved_by") @db.Uuid
+  createdAt                                DateTime?           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                                DateTime?           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  attachments                              ProcessAttachment[]
+  profiles_processes_approved_byToprofiles Profile?            @relation("processes_approved_byToprofiles", fields: [approvedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  company                                  Company             @relation(fields: [companyId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  creator                                  Profile             @relation("CreatedBy", fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  profiles_processes_owner_idToprofiles    Profile?            @relation("processes_owner_idToprofiles", fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sectors                                  sectors?            @relation(fields: [sector_id], references: [id], onUpdate: NoAction)
+  updater                                  Profile?            @relation("UpdatedBy", fields: [updatedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([companyId, code], map: "processes_code_company_unique")
+  @@map("processes")
+}
+
+model ProcessAttachment {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processId  String    @map("process_id") @db.Uuid
+  name       String    @db.VarChar(200)
+  url        String    @db.VarChar(500)
+  fileType   String?   @map("file_type") @db.VarChar(50)
+  size_bytes Int?
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  process    Process   @relation(fields: [processId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("process_attachments")
+}
+
+model positions {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id String    @db.Uuid
+  title      String    @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  companies  Company   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles   Profile[]
+}
+
+model sectors {
+  id                                    String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id                            String          @db.Uuid
+  name                                  String          @db.VarChar(100)
+  created_at                            DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                            DateTime?       @default(now()) @db.Timestamptz(6)
+  manager_id                            String?         @db.Uuid
+  collaborators                         collaborators[]
+  processes                             Process[]
+  profiles                              Profile[]
+  companies                             Company         @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles_sectors_manager_idToprofiles Profile?        @relation("sectors_manager_idToprofiles", fields: [manager_id], references: [id], onUpdate: NoAction)
+}
+
+model collaborators {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id String    @db.Uuid
+  sector_id  String?   @db.Uuid
+  profile_id String?   @db.Uuid
+  name       String    @db.VarChar(200)
+  cpf        String?   @unique @db.VarChar(14)
+  phone      String?   @db.VarChar(22)
+  email      String?   @db.VarChar(200)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  companies  Company   @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  profiles   Profile?  @relation(fields: [profile_id], references: [id], onUpdate: NoAction)
+  sectors    sectors?  @relation(fields: [sector_id], references: [id], onUpdate: NoAction)
+
+  @@index([company_id], map: "idx_collaborators_company")
+  @@index([sector_id], map: "idx_collaborators_sector")
+}
+
+enum Role {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  USER
+}
+
+enum ProcessStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
