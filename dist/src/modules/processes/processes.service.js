@@ -22,21 +22,13 @@ let ProcessesService = class ProcessesService {
         this.cache = cache;
     }
     async createDraft(userId, companyId, dto) {
-        let finalCompanyId = companyId;
-        if (!finalCompanyId) {
-            const userProfile = await this.prisma.profile.findUnique({
-                where: { id: userId },
-                select: { companyId: true },
-            });
-            if (!userProfile?.companyId) {
-                throw new common_1.NotFoundException("Usuário não pertence a nenhuma empresa.");
-            }
-            finalCompanyId = userProfile.companyId;
+        if (!companyId) {
+            throw new common_1.BadRequestException("Empresa não selecionada. Selecione uma empresa antes de criar processos.");
         }
         const process = await this.prisma.process.create({
             data: {
                 title: dto.name,
-                company: { connect: { id: finalCompanyId } },
+                company: { connect: { id: companyId } },
                 creator: { connect: { id: userId } },
                 status: client_1.ProcessStatus.DRAFT,
                 version: "1.0",
@@ -99,15 +91,18 @@ let ProcessesService = class ProcessesService {
             },
         });
     }
-    async findAll(userId) {
-        const user = await this.prisma.profile.findUnique({
-            where: { id: userId },
-        });
-        if (!user?.companyId)
+    async findAll(companyId) {
+        if (!companyId) {
             return [];
+        }
         return this.prisma.process.findMany({
-            where: { companyId: user.companyId },
+            where: { companyId },
             orderBy: { updatedAt: "desc" },
+            include: {
+                creator: {
+                    select: { id: true, name: true, email: true }
+                }
+            }
         });
     }
     async invalidateCache(userId) {

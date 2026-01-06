@@ -5,10 +5,14 @@ export declare class ProcessesService {
     private prisma;
     private cache;
     constructor(prisma: PrismaService, cache: CacheService);
-    createDraft(userId: string, companyId: string | null, dto: CreateProcessWizardDto): Promise<{
-        id: string;
-        code: string | null;
+    createDraft(userId: string, companyId: string, dto: CreateProcessWizardDto): Promise<{
         title: string;
+        companyId: string;
+        id: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        sector_id: string | null;
+        code: string | null;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -20,19 +24,19 @@ export declare class ProcessesService {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        companyId: string;
-        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
         approvedBy: string | null;
     }>;
     updateDraft(id: string, dto: any): Promise<{
-        id: string;
-        code: string | null;
         title: string;
+        companyId: string;
+        id: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        sector_id: string | null;
+        code: string | null;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -44,10 +48,6 @@ export declare class ProcessesService {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        companyId: string;
-        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -55,9 +55,13 @@ export declare class ProcessesService {
     }>;
     private validateCollaborators;
     publish(id: string, userId: string): Promise<{
-        id: string;
-        code: string | null;
         title: string;
+        companyId: string;
+        id: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        sector_id: string | null;
+        code: string | null;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -69,10 +73,6 @@ export declare class ProcessesService {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        companyId: string;
-        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
@@ -81,29 +81,33 @@ export declare class ProcessesService {
     findOne(id: string, userId: string): Promise<({
         attachments: {
             id: string;
-            createdAt: Date | null;
             name: string;
+            createdAt: Date | null;
             processId: string;
             url: string;
             fileType: string | null;
             size_bytes: number | null;
         }[];
         creator: {
-            id: string;
-            createdAt: Date | null;
-            updatedAt: Date | null;
             companyId: string | null;
-            sector_id: string | null;
-            name: string;
+            id: string;
             email: string;
-            position_id: string | null;
+            name: string;
             phone: string | null;
             role: import("@prisma/client").$Enums.Role | null;
+            createdAt: Date | null;
+            updatedAt: Date | null;
+            sector_id: string | null;
+            position_id: string | null;
         };
     } & {
-        id: string;
-        code: string | null;
         title: string;
+        companyId: string;
+        id: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        sector_id: string | null;
+        code: string | null;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -115,19 +119,25 @@ export declare class ProcessesService {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        companyId: string;
-        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
         approvedBy: string | null;
     }) | null>;
-    findAll(userId: string): Promise<{
-        id: string;
-        code: string | null;
+    findAll(companyId: string | undefined): Promise<({
+        creator: {
+            id: string;
+            email: string;
+            name: string;
+        };
+    } & {
         title: string;
+        companyId: string;
+        id: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        sector_id: string | null;
+        code: string | null;
         version: string | null;
         status: import("@prisma/client").$Enums.ProcessStatus | null;
         objective: string | null;
@@ -139,14 +149,10 @@ export declare class ProcessesService {
         bpmnXml: string | null;
         bpmn_image_url: string | null;
         reviewedAt: Date | null;
-        createdAt: Date | null;
-        updatedAt: Date | null;
-        companyId: string;
-        sector_id: string | null;
         owner_id: string | null;
         createdById: string;
         updatedById: string | null;
         approvedBy: string | null;
-    }[]>;
+    })[]>;
     private invalidateCache;
 }

@@ -109,6 +109,115 @@ let UsersService = UsersService_1 = class UsersService {
             default: return client_1.Role.USER;
         }
     }
+    async getUserCompanies(userId) {
+        this.logger.log(`Fetching companies for user: ${userId}`);
+        const profile = await this.prisma.profile.findUnique({
+            where: { id: userId },
+            include: {
+                company: {
+                    select: { id: true, name: true, cnpj: true, isActive: true }
+                }
+            }
+        });
+        if (!profile) {
+            throw new common_1.NotFoundException('Perfil de usuário não encontrado.');
+        }
+        const collaborations = await this.prisma.collaborators.findMany({
+            where: { profile_id: userId },
+            include: {
+                companies: {
+                    select: { id: true, name: true, cnpj: true, isActive: true }
+                }
+            }
+        });
+        const companiesMap = new Map();
+        if (profile.company) {
+            companiesMap.set(profile.company.id, {
+                ...profile.company,
+                isCurrent: profile.companyId === profile.company.id
+            });
+        }
+        collaborations.forEach(collab => {
+            if (collab.companies && !companiesMap.has(collab.companies.id)) {
+                companiesMap.set(collab.companies.id, {
+                    ...collab.companies,
+                    isCurrent: profile.companyId === collab.companies.id
+                });
+            }
+        });
+        const companies = Array.from(companiesMap.values());
+        this.logger.log(`Found ${companies.length} companies for user ${userId}`);
+        return {
+            currentCompanyId: profile.companyId,
+            companies
+        };
+    }
+    async switchCompany(userId, dto) {
+        const { companyId } = dto;
+        this.logger.log(`User ${userId} switching to company ${companyId}`);
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+            select: { id: true, name: true, isActive: true }
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada.');
+        }
+        if (!company.isActive) {
+            throw new common_1.BadRequestException('Esta empresa está desativada.');
+        }
+        const hasAccess = await this.checkCompanyAccess(userId, companyId);
+        if (!hasAccess) {
+            throw new common_1.ForbiddenException('Você não tem acesso a esta empresa.');
+        }
+        const updatedProfile = await this.prisma.profile.update({
+            where: { id: userId },
+            data: { companyId },
+            select: {
+                id: true,
+                companyId: true,
+                name: true,
+                email: true,
+                role: true
+            }
+        });
+        this.logger.log(`User ${userId} successfully switched to company ${companyId}`);
+        return {
+            message: 'Empresa alterada com sucesso.',
+            user: updatedProfile,
+            company: { id: company.id, name: company.name }
+        };
+    }
+    async checkCompanyAccess(userId, companyId) {
+        const profileWithCompany = await this.prisma.profile.findFirst({
+            where: { id: userId, companyId }
+        });
+        if (profileWithCompany)
+            return true;
+        const collaboration = await this.prisma.collaborators.findFirst({
+            where: { profile_id: userId, company_id: companyId }
+        });
+        return !!collaboration;
+    }
+    async getMe(userId) {
+        const profile = await this.prisma.profile.findUnique({
+            where: { id: userId },
+            include: {
+                company: {
+                    select: { id: true, name: true }
+                },
+                sectors: {
+                    select: { id: true, name: true }
+                },
+                positions: {
+                    select: { id: true, title: true }
+                }
+            }
+        });
+        if (!profile) {
+            throw new common_1.NotFoundException('Perfil não encontrado.');
+        }
+        return profile;
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = UsersService_1 = __decorate([

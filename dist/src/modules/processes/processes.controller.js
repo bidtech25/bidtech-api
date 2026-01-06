@@ -28,8 +28,17 @@ let ProcessesController = class ProcessesController {
     constructor(service) {
         this.service = service;
     }
+    findAll(user) {
+        return this.service.findAll(user.companyId);
+    }
+    findOne(id, user) {
+        return this.service.findOne(id, user.id);
+    }
     createDraft(user, dto) {
-        return this.service.createDraft(user.id, null, dto);
+        if (!user.companyId) {
+            throw new common_1.BadRequestException('Selecione uma empresa antes de criar processos.');
+        }
+        return this.service.createDraft(user.id, user.companyId, dto);
     }
     updateObjective(id, dto) {
         return this.service.updateDraft(id, dto);
@@ -46,14 +55,31 @@ let ProcessesController = class ProcessesController {
     publish(id, user) {
         return this.service.publish(id, user.id);
     }
-    findOne(id, user) {
-        return this.service.findOne(id, user.id);
-    }
 };
 exports.ProcessesController = ProcessesController;
 __decorate([
+    (0, common_1.Get)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Listar todos os processos da empresa atual' }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Lista de processos retornada.' }),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProcessesController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Buscar Processo Completo (Revisão)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], ProcessesController.prototype, "findOne", null);
+__decorate([
     (0, common_1.Post)(),
     (0, swagger_1.ApiOperation)({ summary: 'Passo 1: Criar Rascunho do Processo' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Rascunho criado com sucesso.' }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Empresa não selecionada.' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -105,15 +131,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], ProcessesController.prototype, "publish", null);
-__decorate([
-    (0, common_1.Get)(':id'),
-    (0, swagger_1.ApiOperation)({ summary: 'Buscar Processo Completo (Revisão)' }),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
-], ProcessesController.prototype, "findOne", null);
 exports.ProcessesController = ProcessesController = __decorate([
     (0, swagger_1.ApiTags)('Process Wizard'),
     (0, swagger_1.ApiBearerAuth)(),

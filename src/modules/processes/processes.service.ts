@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CacheService } from "@/modules/cache/cache.service";
 import { CreateProcessWizardDto } from "./dto/create-process-wizard.dto";
@@ -11,34 +11,31 @@ export class ProcessesService {
     private cache: CacheService
   ) {}
 
-  // 1. Criar Rascunho
+  /**
+   * Criar Rascunho de Processo
+   * 
+   * @param userId - ID do usuário autenticado (vem do JWT)
+   * @param companyId - ID da empresa do contexto (vem do JWT/Profile)
+   * @param dto - Dados do processo
+   */
   async createDraft(
     userId: string,
-    companyId: string | null,
+    companyId: string,
     dto: CreateProcessWizardDto
   ) {
-    // 1. Busque o company_id do usuário logado se não foi fornecido
-    let finalCompanyId = companyId;
-
-    if (!finalCompanyId) {
-      const userProfile = await this.prisma.profile.findUnique({
-        where: { id: userId },
-        select: { companyId: true },
-      });
-
-      if (!userProfile?.companyId) {
-        throw new NotFoundException("Usuário não pertence a nenhuma empresa.");
-      }
-
-      finalCompanyId = userProfile.companyId;
+    // Validação: companyId é obrigatório (deve vir do contexto JWT)
+    if (!companyId) {
+      throw new BadRequestException(
+        "Empresa não selecionada. Selecione uma empresa antes de criar processos."
+      );
     }
 
-    // 2. Criar o processo com o relacionamento correto
+    // Criar o processo com o relacionamento correto
     const process = await this.prisma.process.create({
       data: {
-        title: dto.name, // Mapping name to title
-        company: { connect: { id: finalCompanyId } }, // Conexão explícita
-        creator: { connect: { id: userId } }, // Conexão explícita
+        title: dto.name,
+        company: { connect: { id: companyId } },
+        creator: { connect: { id: userId } },
         status: ProcessStatus.DRAFT,
         version: "1.0",
       },
@@ -130,20 +127,24 @@ export class ProcessesService {
     });
   }
 
-  async findAll(userId: string) {
-    /* 
-       Note: In a multi-tenant system, we should filter by CompanyId.
-       However, we don't have companyId easily here without passing it.
-       Ideally, we find the user's company and then find processes.
-     */
-    const user = await this.prisma.profile.findUnique({
-      where: { id: userId },
-    });
-    if (!user?.companyId) return [];
+  /**
+   * Lista todos os processos da empresa do contexto atual
+   * 
+   * @param companyId - ID da empresa do contexto (vem do JWT/Profile)
+   */
+  async findAll(companyId: string | undefined) {
+    if (!companyId) {
+      return [];
+    }
 
     return this.prisma.process.findMany({
-      where: { companyId: user.companyId },
+      where: { companyId },
       orderBy: { updatedAt: "desc" },
+      include: {
+        creator: {
+          select: { id: true, name: true, email: true }
+        }
+      }
     });
   }
 
